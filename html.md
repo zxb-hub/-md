@@ -2,7 +2,7 @@
  * @Author: zhengxb zhengxb@hsmap.com
  * @Date: 2022-05-11 21:04:30
  * @LastEditors: zhengxb zhengxb@hsmap.com
- * @LastEditTime: 2022-05-12 19:27:11
+ * @LastEditTime: 2022-05-12 23:56:13
  * @FilePath: \面试\html.md
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -38,6 +38,7 @@
   <code>：      标记代码。
   <meter>：     定义已知范围或分数值内的标量测量。（Internet Explorer 不支持 meter 标签）
   <progress>：  定义运行中的进度（进程）。
+  <dialog>:     定义对话框
 ```
 优点：
   1. 对人：增加代码可读性，利于维护
@@ -78,6 +79,15 @@
 2. **BackCompat：怪异模式（混杂模式）（Quick mode），** 浏览器使用怪异模式渲染页面，在怪异模式下，浏览器将会以一种比较宽松的向后兼容的方式呈现
 
 ### 3、常见的meta标签
+> meta是文档级元数据元素，用来表示那些不能由其它 HTML 元相关元素（```<base>、<link>, <script>、<style>或 <title>```）之一表示的任何元数据。
+
+
+作用：
+  * 如果设置了 name属性，meta 元素提供的是文档级别的元数据，应用于整个页面。
+  * 如果设置了 http-equiv属性，meta 元素则是编译指令，提供的信息与类似命名的 HTTP 头部相同。
+  * 如果设置了 charset属性，meta 元素是一个字符集声明，告诉文档使用哪种字符编码。
+  * 如果设置了 itemprop 属性，meta 元素提供用户定义的元数据。
+
 > meta标签由name和content属性定义，**用来描述网页文档的属性**，比如网页作者，网页描述，关键字等，除了http固定的一些name作为共识，也可自定义name
 
 常见的meta标签：
@@ -87,7 +97,10 @@
 4. **refresh**：页面重定向和刷新：```<meta name="refresh" content="0;url=" />```
 5. **viewport**：适配移动端，可以控制视口的大小和比例：
 ```
-  <meta name="viewport" content="width=device-width, initial-scale=1,maximun-scale=1" />
+  <meta name="viewport" 
+    content="width=device-width, 
+    initial-scale=1,
+    maximun-scale=1" />
   content参数有以下几种：
     width viewport: 宽度（数值/device-width）
     height viewport: 高度（数值/device-height）
@@ -95,3 +108,85 @@
     maximun-scale：最大缩放比例
     minimu-scale：最小缩放比例
 ```
+5. **robots**：表示爬虫对此页面的行为，应当遵守的规则
+   * *all*：搜索引擎将索引此网页，并继续通过此网页的链接索引文件将被索引
+   * *none*：搜索引擎将忽略此网页
+   * *index*：搜索引擎索引此网页
+   * *follow*：搜索引擎继续通过此网页的链接索引搜索其他的网页
+
+6. **renderer**：用来指定双核浏览器的渲染方式，比如360浏览器，我们可以通过这个设置来指定360浏览器的渲染方式
+  ```
+    <meta name="renderer" content="webkit"> //默认webkit内核
+    <meta name="renderer" content="ie-comp"> //默认IE兼容模式
+    <meta name="renderer" content="ie-stand"> //默认IE标准模式
+  ```
+7. **http-equiv**：和content一起使用，前者表示要表示的元数据的*名称*，后者是元数据的*值*。==http-equiv== 所有允许的值都是特定HTTP头部的名称
+```
+  <!-- 禁止浏览器从本地的缓存中调取页面内容，
+       设定后一旦离开网页就无法从Cache中再调出 -->
+  <meta http-equiv="pragma" content="no-cache">
+
+  <!-- 清除缓存，再访问时需要重新下载 -->
+  <meta http-equiv="cache-control" content="no-cache">
+
+  <!-- 设定网页的到期时间，一旦网页过期，必须重新从服务器获取 -->
+  <meta http-equiv="expires" content="0">
+
+  <!-- 关键字，搜索引擎使用 -->
+  <meta http-equiv="keywords" content="关键字">
+
+  <!-- 编码方式 -->
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+
+  <!-- 几秒后自动跳转 -->
+  <meta http-equiv="Refresh" content="2; URL=http://www.net.cn/">
+
+  <!-- Set-Cookie 如果网页过期，那么存盘的cookie将被删除 -->
+  <meta 
+    http-equiv="Set-Cookie" 
+    content="cookie value=xxx;expires=Wednesday, 20-Jun-200722:33:00 GMT; path=/">
+
+  <!-- 兼容ie -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  1. IE=edge告诉浏览器，以当前浏览器支持的最新版本本来渲染，IE9就以IE9版本渲染
+  2. chrome=1告诉浏览器，如果当前IE浏览器安装Google Chrome Frame插件，就以chrome内核来渲染页面。
+```
+
+### 4、Script 标签所放位置（defer，async）
+> 浏览器渲染html文档是从上往下执行，遇到js文件会停止当前页面渲染，转而去下载文件，所以一般将js文件放在文档底部，优化首屏渲染。
+
+优化加载js文件的方式还有defer和async将js文件转为异步加载
+
+defer和async的区别：
+  * defer会等到整个文档渲染完成之后才执行,async在加载完成之后，会暂停html的解析，转去执行js
+  * defer执行脚本会按照加载顺序去执行，而async执行属于异步执行，哪个先加载完就会执行哪个
+
+![](./img/html/async%E5%92%8Cdefer%E5%8A%A0%E8%BD%BD.awebp)
+
+
+### 5、HTML5新特新
+* 新增语义化标签：详见1
+* 增强型表单：
+  * input输入类型：
+      输入类型| 描述|
+      ---|---
+      color| 用于选取颜色
+      date| 从一个日期选择器中选择一个日期
+      datetime| 日期选择器（UTC时间）
+      datetime-local| 选择一个日期和时间（无时区）
+      email|包含email地址
+      month|月份选择器
+      number|数值
+      range|一定范围的数值输入域
+      search|用于搜索域
+      tel|电话号码
+      time|时间选择器
+      url|URL地址
+      week|选择周和年
+  * 新增表单元素
+      表单元素| 描述|
+      ---|---
+      < datalist> | 元素规定输入域的选项列表，使用< input>的list属性与其id进行绑定
+      < keygen> | 提供验证用户的可靠方法，标签规定用于表单的密钥对生成器字段
+      < output> | 用于不同类型的输出，比如计算或者脚本输出
+  * 
