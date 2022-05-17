@@ -324,3 +324,14 @@
      console.log(2);
    })
   ```
+
+  #### Promise.prototype.then()
+    > then方法返回的是一个新的Promise实例（注意，不是原来那个Promise实例）。因此可以采用链式写法，即then方法后面再调用另一个then方法
+
+    ```
+      getJSON("/posts.json").then(function(json) {
+       return json.post;
+      }).then(function(post) {
+        // ...
+      });
+    ```
