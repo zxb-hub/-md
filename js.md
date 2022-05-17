@@ -1,6 +1,6 @@
 ### js数据类型
 #### 基础数据类型
-  > Boolean Number String undefined null Bigint Symbol
+  > 7种 Boolean Number String undefined null Bigint Symbol
   ##### Bigint
   JavaScript 所有数字都保存成 64 位浮点数，这给数值的表示带来了两大限制。一是数值的精度只能到 53 个二进制位（相当于 16 个十进制位），大于这个范围的整数，JavaScript 是无法精确表示，这使得 JavaScript 不适合进行科学和金融方面的精确计算。二是大于或等于2的1024次方的数值，JavaScript 无法表示，会返回Infinity。
     ```
@@ -219,3 +219,108 @@
   ```
   缺点：会导致外部无法使用此方法，且每次运行的name都不同
   其余*symbol* 方法可查看[===>阮一峰es6-Symbol](https://es6.ruanyifeng.com/?search=bigint&x=0&y=0#docs/symbol)
+
+
+#### 引用数据类型
+  > 1种 Object对象（包括基础类型object、function、array、Data、regExp、Math）
+
+
+
+### Promise
+  > 
+  > 解决了什么问题: 异步之间存在依赖关系，需要通过层层嵌套回调来满足这种依赖，如果嵌套层数过多，可读性和可维护性都变得很差，产生所谓“回调地狱”，而Promise将回调嵌套改为链式调用，增加可读性和可维护性
+
+  > 三种状态，**Pending（等待状态）**、**Fulfilled（执行状态）**、**Rejected（拒绝状态）**，状态变更是单向的，状态不可逆，都是从Pending到剩下两个状态，一旦状态改变就会一直保持这个状态，称为**resolved（已定型）**
+
+  > then方法可以接收两个可选参数, 第一个回调函数是Promise对象的状态变为resolved时调用，第二个回调函数是Promise对象的状态变为rejected时调用。这两个函数都是可选的，不一定要提供。它们都接受Promise对象传出的值作为参数
+  ***观察者模式***
+  > 收集依赖 -> 触发通知 -> 取出依赖执行
+  > promise中，执行顺序是 then收集依赖 -> 异步触发resolve -> resolve执行依赖
+  ```
+    const p1 = new Promise((resolve, reject) => { // 立即执行
+      setTimeout(() => { // setTimeout为宏任务，所以这一步为宏任务执行
+          resolve('result')
+      },
+      1000);
+    }) 
+    // .then会进行提前依赖收集，等promise状态改变后才会在微队列中执行
+    p1.then(res => console.log(res), err => console.log(err)) // 宏任务执行完成后，状态改变，会执行.then()中的微任务
+  ```
+  1. Promise对象接收一个回调函数，其中包含两个参数resolve和reject
+  2. 创建Promise时，会立即执行这个回调函数
+  3. 回调函数中使用resolve和reject将任务状态改变，分别推向.then和.catch中
+  4. .then()被执行，收集失败和成功的回调，放入相应队列中
+  5. setTimeout中的回调执行，将任务状态改变，.then()执行相应回调
+
+  **Promise 新建后就会立即执行**
+  ```
+   let promise = new Promise(function(resolve, reject) {
+     console.log('Promise');
+     resolve();
+   });
+
+   promise.then(function() {
+     console.log('resolved.');
+   });
+
+   console.log('Hi!');
+
+   // Promise
+   // Hi!
+   // resolved
+
+  ```
+  Promise 新建后立即执行，所以首先输出的是Promise
+  然后，then方法指定的回调函数，将在当前脚本所有同步任务执行完才会执行，所以resolved最后输出
+
+  > 当一个异步操作（p1）的结果返回另一个异步操作（p2）时，p2的结果将会传递给p1，也就是说p2的状态决定了p1的状态；
+    如果p2的状态为padding，则p1会等待p2的状态改变；
+    如果p2的状态变为resolved或rejected，那么p1的回调函数会立刻执行
+  ``` 
+    const p2 = new Promise(function (resolve, reject) {
+      // ...
+    });
+
+    const p1 = new Promise(function (resolve, reject) {
+      // ...
+      resolve(p2);
+    })
+  ```
+
+  ```
+   const p1 = new Promise(function (resolve, reject) {
+     setTimeout(() => reject(new Error('fail')), 3000)
+   })
+
+   const p2 = new Promise(function (resolve, reject) {
+     setTimeout(() => resolve(p1), 1000)
+   })
+
+   p2
+     .then(result => console.log(result))
+     .catch(error => console.log(error))
+
+   // Error: fail
+  ```
+  > p1是一个 Promise，3 秒之后变为rejected。p2的状态在 1 秒之后改变，resolve方法返回的是p1。由于p2返回的是另一个 Promise，导致p2自己的状态无效了，由p1的状态决定p2的状态。所以，后面的then语句都变成针对后者（p1）。又过了 2 秒，p1变为rejected，导致触发catch方法指定的回调函数。
+
+  ***注意：***  用resolve或reject并不会终结 Promise 的参数函数的执行
+  ```
+  new Promise((resolve, reject) => {
+     resolve(1);
+     console.log(2);
+   }).then(r => {
+     console.log(r);
+   });
+   // 2
+   // 1
+  ```
+  调用resolve(1)以后，后面的console.log(2)还是会执行，并且会首先打印出来。这是因为立即 resolved 的 Promise 是在本轮事件循环的末尾执行，总是晚于本轮循环的同步任务
+  > 一般来说，调用resolve或reject以后，Promise 的使命就完成了，后继操作应该放到then方法里面，而不应该直接写在resolve或reject的后面。所以，最好在它们前面加上return语句，这样就不会有意外
+  ```
+  new Promise((resolve, reject) => {
+     return resolve(1);
+     // 后面的语句不会执行
+     console.log(2);
+   })
+  ```
