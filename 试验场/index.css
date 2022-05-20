@@ -1,0 +1,19 @@
+.box {
+  display: flex;
+  flex-direction: row;
+}
+.boxItem{
+  display: inline-block;
+  width: 50px;
+  height: 50px;
+  background-color: aqua;
+  margin: 10px;
+}
+.boxItem:hover{
+  width: 70px;
+  height: 70px;
+}
+.boxItem:hover + .boxItem{
+  width: 65px;
+  height: 65px;
+}
