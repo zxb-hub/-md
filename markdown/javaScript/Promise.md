@@ -414,3 +414,121 @@
 
   #### 关于手写Promise...
   [手写Promise](../-md/js/手写Promise.js)
+
+  #### async/await
+  > async/await 可使异步函数变得可控，使用同步的方式去执行异步操作，当有多个依赖时，可通过await进行处理then链式调用
+  async会将函数变为一个异步函数，函数执行完后返回一个状态为fulfilled的Promise
+
+  * await只能在async函数中使用，不然会报错
+  * async函数返回的是一个Promise对象，有无值看有无return值
+  * await后面最好是接Promise，虽然接其他值也能达到排队效果
+  * async/await作用是用同步方式，执行异步操作
+
+  ##### 实现
+  > async/await 语法糖的实现实际上是对Generator (生成器) 的封装
+
+  Generater函数需要在定义时多加上一个* `function* xxx` ，并且只有在Generater函数中才能使用yield；
+  > yield 可以类似于debugger ，一个暂停点，需要调用next() 方法进行继续执行
+
+  * value：暂停点后面接的值，也就是yield后面接的值
+  * done：是否generator函数已走完，没走完为false，走完为true
+  ```
+  function* gen() {
+    yield 1
+    yield 2
+    yield 3
+  }
+  const g = gen()
+  console.log(g.next()) // { value: 1, done: false }
+  console.log(g.next()) // { value: 2, done: false }
+  console.log(g.next()) // { value: 3, done: false }
+  console.log(g.next()) // { value: undefined, done: true }
+
+  ```
+
+  yield后面接函数的话，到了对应暂停点yield，会马上执行此函数，并且该函数的执行返回值，会被当做此暂停点对象的value
+
+  ```
+  function fn(num) {
+    console.log(num)
+    return num
+  }
+  function* gen() {
+    yield fn(1)
+    yield fn(2)
+    return 3
+  }
+  const g = gen()
+  console.log(g.next()) 
+  // 1
+  // { value: 1, done: false }
+  console.log(g.next())
+  // 2
+  //  { value: 2, done: false }
+  console.log(g.next()) 
+  // { value: 3, done: true }
+
+  ```
+  换成Promise进行执行
+  ```
+  // 手动执行
+  function* myGenerator() {
+    yield Promise.resolve(1);
+    yield Promise.resolve(2);
+    yield Promise.resolve(3);
+  }
+
+  // 手动执行迭代器
+  const gen = myGenerator()
+  gen.next().value.then(val => {
+    console.log(val)
+    gen.next().value.then(val => {
+      console.log(val)
+      gen.next().value.then(val => {
+        console.log(val)
+      })
+    })
+  })
+
+  //输出1 2 3
+
+
+  // 封装方法自动执行
+  function run(gen) {
+    //把返回值包装成promise
+    return new Promise((resolve, reject) => {
+      var g = gen() //由于每次gen()获取到的都是最新的迭代器,因此获取迭代器操作要放在_next()之前,否则会进入死循环
+
+      function _next(val) {
+        //错误处理
+        try {
+          var res = g.next(val) 
+        } catch(err) {
+          return reject(err); 
+        }
+        if(res.done) {
+          return resolve(res.value);
+        }
+        //res.value包装为promise，以兼容yield后面跟基本类型的情况
+        Promise.resolve(res.value).then(
+          val => {
+            _next(val);
+          }, 
+          err => {
+            //抛出错误
+            g.throw(err)
+          });
+      }
+      _next();
+    });
+  }
+
+  function* myGenerator() {
+    console.log(yield Promise.resolve(1))   //1
+    console.log(yield Promise.resolve(2))   //2
+    console.log(yield Promise.resolve(3))   //3
+  }
+
+  run(myGenerator)
+  ```
+  链接：[Promise/async/Generator实现原理解析](https://juejin.cn/post/6844904096525189128#heading-4)
