@@ -1,8 +1,8 @@
+const PENDING = 'pengding'
+const RULFILLED = 'rulfilled'
+const REJECTED = 'rejected'
 class myPromise {
   constructor(executor) {
-    const PENDING = 'pengding'
-    const RULFILLED = 'rulfilled'
-    const REJECTED = 'rejected'
     this._state = PENDING
     this._value = undefined
     this._resolveQueue = [] // 成功回调队列
@@ -157,7 +157,9 @@ class myPromise {
   }
 }
 
+console.log('start');
 const p1 = new myPromise((resolve, reject) => {
+  console.log(123);
   setTimeout(() => {
     resolve(1)
   }, 500);
@@ -173,3 +175,5 @@ p1.then(res => {
   .then(res => {
     console.log(res)
   })
+
+console.log('end');
