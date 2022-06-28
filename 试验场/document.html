@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <!-- 引入 css -->
+<link href="https://unpkg.com/@wangeditor/editor@latest/dist/css/style.css" rel="stylesheet">
+
+<!-- 引入 js -->
+<script src="https://unpkg.com/@wangeditor/editor@latest/dist/index.js"></script>
+<script>
+    var E = window.wangEditor; // 全局变量
+</script>
+<style>
+  .clearBtn {
+    width: 50px;
+    height: 30px;
+    display: inline-block;
+    border: 1px solid #000;
+    cursor: pointer;
+    text-align: center;
+    line-height: 30px;
+    border-radius: 3px;
+  }
+</style>
+</head>
+<body>
+  <div id="toolbar-container" style="width: 800px;height: 100px;"></div>
+  <div id="editor-container" style="height: 500px;width: 800px;"></div>
+  <div class="clearBtn" onclick="clearLocal('text')">清空</div>
+</body>
+<script>
+  const { createEditor, createToolbar } = window.wangEditor
+  // 编辑器配置
+  const editorConfig = {}
+  editorConfig.placeholder = '请输入内容'
+  editorConfig.onChange = (editor) => {
+      // 当编辑器选区、内容变化时，即触发
+      console.log('content', editor.children)
+      localStorage.setItem('text', editor.getHtml())
+      console.log('html', editor.getHtml())
+  }
+
+  // 工具栏配置
+  const toolbarConfig = {}
+
+  // 创建编辑器
+  const editor = createEditor({
+    selector: '#editor-container',
+    config: editorConfig,
+    html: localStorage.getItem('text')||'',
+    mode: 'default' // 或 'simple' 参考下文
+  })
+  // 创建工具栏
+  const toolbar = createToolbar({
+    editor,
+    selector: '#toolbar-container',
+    config: toolbarConfig,
+    mode: 'default' // 或 'simple' 参考下文
+  })
+  
+  
+  const clearLocal = (name) => {
+    localStorage.clear(name)
+    editor.clear()
+  }
+</script>
+</html>

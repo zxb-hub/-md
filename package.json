@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "dependencies": {},
+  "dependencies": {
+    "@ckeditor/ckeditor5-build-classic": "^34.1.0"
+  },
   "devDependencies": {
     "doctoc": "^2.2.0"
   },
